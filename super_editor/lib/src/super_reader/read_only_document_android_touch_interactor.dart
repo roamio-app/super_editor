@@ -814,11 +814,19 @@ class _ReadOnlyAndroidDocumentTouchInteractorState extends State<ReadOnlyAndroid
   }
 
   void _showEditingControlsOverlay() {
-    _overlayPortalController.show();
+    scheduleMicrotask(() {
+      if (mounted) {
+        _overlayPortalController.show();
+      }
+    });
   }
 
   void _removeEditingOverlayControls() {
-    _overlayPortalController.hide();
+    scheduleMicrotask(() {
+      if (mounted) {
+        _overlayPortalController.hide();
+      }
+    });
   }
 
   void _onHandleDragStart(HandleType handleType, Offset globalOffset) {

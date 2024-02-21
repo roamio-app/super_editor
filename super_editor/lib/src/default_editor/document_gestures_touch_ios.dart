@@ -1382,7 +1382,11 @@ class SuperEditorIosToolbarOverlayManagerState extends State<SuperEditorIosToolb
     super.didChangeDependencies();
 
     _controlsController = SuperEditorIosControlsScope.rootOf(context);
-    _overlayPortalController.show();
+    scheduleMicrotask(() {
+      if (mounted) {
+        _overlayPortalController.show();
+      }
+    });
   }
 
   @visibleForTesting
@@ -1436,7 +1440,11 @@ class SuperEditorIosMagnifierOverlayManagerState extends State<SuperEditorIosMag
     super.didChangeDependencies();
 
     _controlsController = SuperEditorIosControlsScope.rootOf(context);
-    _overlayPortalController.show();
+    scheduleMicrotask(() {
+      if (mounted) {
+        _overlayPortalController.show();
+      }
+    });
   }
 
   @visibleForTesting

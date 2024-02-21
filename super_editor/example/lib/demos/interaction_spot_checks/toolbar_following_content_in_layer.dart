@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -29,7 +30,11 @@ class _ToolbarFollowingContentInLayerState extends State<ToolbarFollowingContent
   void initState() {
     super.initState();
 
-    _overlayPortalController.show();
+    scheduleMicrotask(() {
+      if (mounted) {
+        _overlayPortalController.show();
+      }
+    });
   }
 
   @override
