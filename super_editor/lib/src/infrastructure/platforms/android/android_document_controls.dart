@@ -314,7 +314,7 @@ class AndroidControlsDocumentLayerState
 
     if (selection.isCollapsed && !_controlsController!.shouldShowExpandedHandles.value) {
       return DocumentSelectionLayout(
-        caret: documentLayout.getRectForPosition(selection.extent)!,
+        caret: documentLayout.getRectForPosition(selection.extent),
       );
     } else {
       return DocumentSelectionLayout(
