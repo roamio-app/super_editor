@@ -98,12 +98,12 @@ class DocumentChangeLog {
 }
 
 /// Marker interface for all document changes.
-abstract class DocumentChange {
+sealed class DocumentChange {
   // Marker interface
 }
 
 /// A [DocumentChange] that impacts a single, specified [DocumentNode] with [nodeId].
-abstract class NodeDocumentChange implements DocumentChange {
+sealed class NodeDocumentChange implements DocumentChange {
   String get nodeId;
 }
 
