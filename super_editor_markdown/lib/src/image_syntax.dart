@@ -24,18 +24,18 @@ class SuperEditorImageSyntax extends md.LinkSyntax {
         );
 
   @override
-  md.Node? close(
+  Iterable<md.Node>? close(
     md.InlineParser parser,
     covariant md.SimpleDelimiter opener,
     md.Delimiter? closer, {
     String? tag,
     required List<md.Node> Function() getChildren,
   }) {
-    var text = parser.source!.substring(opener.endPos, parser.pos);
+    var text = parser.source.substring(opener.endPos, parser.pos);
     // The current character is the `]` that closed the link text. Examine the
     // next character, to determine what type of link we might have (a '('
     // means a possible inline link; otherwise a possible reference link).
-    if (parser.pos + 1 >= parser.source!.length) {
+    if (parser.pos + 1 >= parser.source.length) {
       // The `]` is at the end of the document, but this may still be a valid
       // shortcut reference link.
       return _tryCreateReferenceLink(parser, text, getChildren: getChildren);
@@ -51,7 +51,13 @@ class SuperEditorImageSyntax extends md.LinkSyntax {
       var leftParenIndex = parser.pos;
       var inlineLink = _parseInlineLink(parser);
       if (inlineLink != null) {
-        return _tryCreateInlineLink(parser, inlineLink, getChildren: getChildren);
+        return [
+          _tryCreateInlineLink(
+            parser,
+            inlineLink,
+            getChildren: getChildren,
+          )
+        ];
       }
       // At this point, we've matched `[...](`, but that `(` did not pan out to
       // be an inline link. We must now check if `[...]` is simply a shortcut
@@ -67,7 +73,8 @@ class SuperEditorImageSyntax extends md.LinkSyntax {
       parser.advanceBy(1);
       // At this point, we've matched `[...][`. Maybe a *full* reference link,
       // like `[foo][bar]` or a *collapsed* reference link, like `[foo][]`.
-      if (parser.pos + 1 < parser.source!.length && parser.charAt(parser.pos + 1) == AsciiTable.rightBracket) {
+      if (parser.pos + 1 < parser.source.length &&
+          parser.charAt(parser.pos + 1) == AsciiTable.rightBracket) {
         // That opening `[` is not actually part of the link. Maybe a
         // *shortcut* reference link (followed by a `[`).
         parser.advanceBy(1);
@@ -100,7 +107,8 @@ class SuperEditorImageSyntax extends md.LinkSyntax {
     // Parse an optional width.
     final width = _tryParseNumber(parser);
 
-    final downstreamCharacter = parser.source!.substring(parser.pos, parser.pos + 1);
+    final downstreamCharacter =
+        parser.source.substring(parser.pos, parser.pos + 1);
     if (downstreamCharacter.toLowerCase() != 'x') {
       // The image size must have a "x" between the width and height, but the input doesn't.  Fizzle.
       return null;
@@ -140,9 +148,25 @@ class SuperEditorImageSyntax extends md.LinkSyntax {
   /// Tries to create a reference link node.
   ///
   /// Returns the link if it was successfully created, `null` otherwise.
-  md.Node? _tryCreateReferenceLink(md.InlineParser parser, String label,
-      {required List<md.Node> Function() getChildren}) {
-    return _resolveReferenceLink(label, parser.document.linkReferences, getChildren: getChildren);
+  Iterable<md.Node>? _tryCreateReferenceLink(
+    md.InlineParser parser,
+    String label, {
+    required List<md.Node> Function() getChildren,
+  }) {
+    final link = _resolveReferenceLink(
+      label,
+      parser.document.linkReferences,
+      getChildren: getChildren,
+    );
+    if (link != null) {
+      return [link];
+    }
+    // return md.FootnoteRefSyntax.tryCreateFootnoteLink(
+    //   context,
+    //   label,
+    //   secondary: secondary,
+    // );
+    return null;
   }
 
   // Tries to create an inline link node.
@@ -150,7 +174,8 @@ class SuperEditorImageSyntax extends md.LinkSyntax {
   /// Returns the link if it was successfully created, `null` otherwise.
   md.Node _tryCreateInlineLink(md.InlineParser parser, MarkdownImage link,
       {required List<md.Node> Function() getChildren}) {
-    return createNode(link.destination, link.title, size: link.size, getChildren: getChildren);
+    return createNode(link.destination, link.title,
+        size: link.size, getChildren: getChildren);
   }
 
   /// Parse an inline [MarkdownImage] at the current position.
@@ -189,11 +214,14 @@ class SuperEditorImageSyntax extends md.LinkSyntax {
 
     // The whitespace should be followed by a title delimiter.
     final delimiter = parser.charAt(parser.pos);
-    if (delimiter != AsciiTable.apostrophe && delimiter != AsciiTable.quote && delimiter != AsciiTable.leftParen) {
+    if (delimiter != AsciiTable.apostrophe &&
+        delimiter != AsciiTable.quote &&
+        delimiter != AsciiTable.leftParen) {
       return null;
     }
 
-    final closeDelimiter = delimiter == AsciiTable.leftParen ? AsciiTable.rightParen : delimiter;
+    final closeDelimiter =
+        delimiter == AsciiTable.leftParen ? AsciiTable.rightParen : delimiter;
     parser.advanceBy(1);
 
     // Now we look for an un-escaped closing delimiter.
@@ -258,7 +286,10 @@ class SuperEditorImageSyntax extends md.LinkSyntax {
       // Normally, label text does not get parsed as inline Markdown. However,
       // for the benefit of the link resolver, we need to at least escape
       // brackets, so that, e.g. a link resolver can receive `[\[\]]` as `[]`.
-      final resolved = linkResolver(label.replaceAll(r'\\', r'\').replaceAll(r'\[', '[').replaceAll(r'\]', ']'));
+      final resolved = linkResolver(label
+          .replaceAll(r'\\', r'\')
+          .replaceAll(r'\[', '[')
+          .replaceAll(r'\]', ']'));
       if (resolved != null) {
         getChildren();
       }
@@ -327,7 +358,9 @@ class SuperEditorImageSyntax extends md.LinkSyntax {
           buffer.writeCharCode(char);
         }
         buffer.writeCharCode(next);
-      } else if (char == AsciiTable.lineFeed || char == AsciiTable.carriageReturn || char == AsciiTable.formFeed) {
+      } else if (char == AsciiTable.lineFeed ||
+          char == AsciiTable.carriageReturn ||
+          char == AsciiTable.formFeed) {
         // Not a link (no line breaks allowed within `<...>`).
         return null;
       } else if (char == AsciiTable.space) {
@@ -412,7 +445,9 @@ class SuperEditorImageSyntax extends md.LinkSyntax {
           // Parentheses may be escaped.
           //
           // http://spec.commonmark.org/0.28/#example-467
-          if (next != AsciiTable.backslash && next != AsciiTable.leftParen && next != AsciiTable.rightParen) {
+          if (next != AsciiTable.backslash &&
+              next != AsciiTable.leftParen &&
+              next != AsciiTable.rightParen) {
             buffer.writeCharCode(char);
           }
           buffer.writeCharCode(next);
@@ -444,7 +479,9 @@ class SuperEditorImageSyntax extends md.LinkSyntax {
           }
 
           final title = _parseTitle(parser);
-          if (title == null && (parser.isDone || parser.charAt(parser.pos) != AsciiTable.rightParen)) {
+          if (title == null &&
+              (parser.isDone ||
+                  parser.charAt(parser.pos) != AsciiTable.rightParen)) {
             // This looked like an inline link, until we found this AsciiTable.$space
             // followed by mystery characters; no longer a link.
             return null;
@@ -480,6 +517,7 @@ class SuperEditorImageSyntax extends md.LinkSyntax {
     }
   }
 
+  @override
   md.Element createNode(
     String destination,
     String? title, {
@@ -501,7 +539,8 @@ class SuperEditorImageSyntax extends md.LinkSyntax {
 
     if (title != null && title.isNotEmpty) {
       title.replaceAll('&', '&amp;');
-      element.attributes['title'] = _escapeAttribute(title.replaceAll('&', '&amp;'));
+      element.attributes['title'] =
+          _escapeAttribute(title.replaceAll('&', '&amp;'));
     }
     return element;
   }
@@ -529,7 +568,8 @@ final _oneOrMoreWhitespacePattern = RegExp('[ \n\r\t]+');
 /// "Normalizes" a link label, according to the [CommonMark spec].
 ///
 /// Extracted from the markdown package.
-String _normalizeLinkLabel(String label) => label.trim().replaceAll(_oneOrMoreWhitespacePattern, ' ').toLowerCase();
+String _normalizeLinkLabel(String label) =>
+    label.trim().replaceAll(_oneOrMoreWhitespacePattern, ' ').toLowerCase();
 
 /// Escapes the contents of [value], so that it may be used as an HTML
 /// attribute.
