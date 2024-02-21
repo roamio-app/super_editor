@@ -1,6 +1,7 @@
 name: super_editor
 description: Configurable, composable, extensible text editor and document renderer for Flutter.
 version: 0.2.6-dev.1
+publish_to: 'none'
 homepage: https://github.com/superlistapp/super_editor
 
 screenshots:
@@ -21,14 +22,24 @@ dependencies:
   flutter:
     sdk: flutter
 
-  attributed_text: ^0.2.2
+  attributed_text:
+    git:
+      url: git@github.com:roamio-app/super_editor.git
+      path: attributed_text
+      ref: main
+
+  super_text_layout: 
+    git:
+      url: git@github.com:roamio-app/super_editor.git
+      path: super_text_layout
+      ref: main
+
   characters: ^1.2.0
   collection: ^1.15.0
   follow_the_leader: ^0.0.4+7
   http: ">=0.13.1 <2.0.0"
   linkify: ^5.0.0
   logging: ^1.0.1
-  super_text_layout: ^0.1.8
   url_launcher: ^6.1.9
   uuid: ^4.3.1
   overlord: ^0.0.3+4
