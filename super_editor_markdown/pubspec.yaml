@@ -1,6 +1,7 @@
 name: super_editor_markdown
 description: Markdown (de)serialization for super_editor documents.
 version: 0.1.5
+publish_to: 'none'
 homepage: https://github.com/superlistapp/super_editor
 
 environment:
@@ -11,7 +12,11 @@ dependencies:
   flutter:
     sdk: flutter
 
-  super_editor: ^0.2.5
+  super_editor: 
+    git:
+      url: git@github.com:roamio-app/super_editor.git
+      path: super_editor
+      ref: main
   logging: ^1.0.1
   markdown: ^7.2.1
 
